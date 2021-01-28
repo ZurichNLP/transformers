@@ -667,7 +667,7 @@ class MBartEncoder(MBartPreTrainedModel):
 
         embed_dim = config.d_model
         self.padding_idx = config.pad_token_id
-        self.max_source_positions = config.max_position_embeddings
+        self.max_source_positions = getattr(config, 'max_encoder_position_embeddings', config.max_position_embeddings)
         self.embed_scale = math.sqrt(embed_dim) if config.scale_embedding else 1.0
 
         if embed_tokens is not None:
@@ -676,7 +676,7 @@ class MBartEncoder(MBartPreTrainedModel):
             self.embed_tokens = nn.Embedding(config.vocab_size, embed_dim, self.padding_idx)
 
         self.embed_positions = MBartLearnedPositionalEmbedding(
-            config.max_position_embeddings,
+            self.max_source_positions,
             embed_dim,
             self.padding_idx,
         )
@@ -833,7 +833,7 @@ class MBartDecoder(MBartPreTrainedModel):
         self.dropout = config.dropout
         self.layerdrop = config.decoder_layerdrop
         self.padding_idx = config.pad_token_id
-        self.max_target_positions = config.max_position_embeddings
+        self.max_target_positions = getattr(config, 'max_decoder_position_embeddings', config.max_position_embeddings)
         self.embed_scale = math.sqrt(config.d_model) if config.scale_embedding else 1.0
 
         if embed_tokens is not None:
@@ -842,7 +842,7 @@ class MBartDecoder(MBartPreTrainedModel):
             self.embed_tokens = nn.Embedding(config.vocab_size, config.d_model, self.padding_idx)
 
         self.embed_positions = MBartLearnedPositionalEmbedding(
-            config.max_position_embeddings,
+            self.max_target_positions,
             config.d_model,
             self.padding_idx,
         )
