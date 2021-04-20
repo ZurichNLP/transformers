@@ -379,13 +379,13 @@ class GenerationMixin:
         return model_kwargs
 
     def _prepare_decoder_input_ids_for_generation(
-        self, input_ids: torch.LongTensor, decoder_start_token_id: int = None, bos_token_id: int = None, decoder_start_token_ids: list = None
+        self, input_ids: torch.LongTensor, decoder_start_token_id: int = None, bos_token_id: int = None, decoder_start_token_ids: torch.LongTensor = None
     ) -> torch.LongTensor:
         if decoder_start_token_ids is not None:
-            assert len(decoder_start_token_ids) == input_ids.shape[0], "decoder_start_token_ids needs to be of batch length: one start token id per sample in batch, but got %i start ids for %i samples in batch." %(len(decoder_start_token_ids), input_ids.shape[0])
+            assert decoder_start_token_ids.shape[0] == input_ids.shape[0], "decoder_start_token_ids needs to be of batch length: one start token id per sample in batch, but got %i start ids for %i samples in batch." %(len(decoder_start_token_ids), input_ids.shape[0])
             decoder_input_ids = (
                 torch.ones((input_ids.shape[0], 1), dtype=input_ids.dtype, device=input_ids.device)
-                * torch.LongTensor(decoder_start_token_ids).unsqueeze(1)
+                * decoder_start_token_ids
             )
         else:
             decoder_start_token_id = self._get_decoder_start_token_id(decoder_start_token_id, bos_token_id)
@@ -611,7 +611,7 @@ class GenerationMixin:
         no_repeat_ngram_size: Optional[int] = None,
         num_return_sequences: Optional[int] = None,
         decoder_start_token_id: Optional[int] = None,
-        decoder_start_token_ids: Optional[List[int]] = None,
+        decoder_start_token_ids: Optional[torch.LongTensor] = None,
         use_cache: Optional[bool] = None,
         num_beam_groups: Optional[int] = None,
         diversity_penalty: Optional[float] = None,
@@ -683,8 +683,8 @@ class GenerationMixin:
                 <../glossary.html#attention-mask>`__
             decoder_start_token_id (:obj:`int`, `optional`):
                 If an encoder-decoder model starts decoding with a different token than `bos`, the id of that token.
-            decoder_start_token_ids (:obj:`List[int]`, `optional`):
-                List of start token ids for decoder, for multilingual batches where samples can have different target language labels as bos (mBART).
+            decoder_start_token_ids (:obj:`torch.LongTensor`, `optional`):
+                Start token ids for decoder, for multilingual batches where samples can have different target language labels as bos (mBART). Shape (batch_size, 1)
             use_cache: (:obj:`bool`, `optional`, defaults to :obj:`True`):
                 Whether or not the model should use the past last key/values attentions (if applicable to the model) to
                 speed up decoding.
