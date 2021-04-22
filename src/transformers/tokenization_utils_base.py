@@ -1895,6 +1895,10 @@ class PreTrainedTokenizerBase(SpecialTokensMixin):
                 )
                 tokenizer.add_tokens(token, special_tokens=bool(token in special_tokens))
 
+            # for mBART: update lang_to_code_id, id_to_lang_code and _additional_special_tokens
+            if hasattr(tokenizer, "id_to_lang_code"):
+                tokenizer.update_lang_codes(added_tok_encoder_sorted)
+
         # Check all our special tokens are registered as "no split" token (we don't cut them) and are in the vocab
         added_tokens = tokenizer.sanitize_special_tokens()
         if added_tokens:

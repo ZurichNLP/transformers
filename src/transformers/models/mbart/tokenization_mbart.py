@@ -112,6 +112,12 @@ class MBartTokenizer(XLMRobertaTokenizer):
     def vocab_size(self):
         return len(self.sp_model) + len(self.lang_code_to_id) + self.fairseq_offset + 1  # Plus 1 for the mask token
 
+    def update_lang_codes(self, tags):
+        for (tag, idx) in tags:
+            self.id_to_lang_code[idx] = tag
+            self.lang_code_to_id[tag] = idx
+            self._additional_special_tokens = list(self.lang_code_to_id.keys())
+
     def get_special_tokens_mask(
         self, token_ids_0: List[int], token_ids_1: Optional[List[int]] = None, already_has_special_tokens: bool = False
     ) -> List[int]:
