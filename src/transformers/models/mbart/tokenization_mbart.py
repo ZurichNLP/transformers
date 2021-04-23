@@ -173,7 +173,6 @@ class MBartTokenizer(XLMRobertaTokenizer):
             :obj:`List[int]`: List of `input IDs <../glossary.html#input-ids>`__ with the appropriate special tokens.
         """
         if token_ids_1 is None:
-            print("build input ", self.prefix_tokens + token_ids_0 + self.suffix_tokens)
             return self.prefix_tokens + token_ids_0 + self.suffix_tokens
         # We don't expect to process pairs, but leave the pair logic for API consistency
         return self.prefix_tokens + token_ids_0 + token_ids_1 + self.suffix_tokens
