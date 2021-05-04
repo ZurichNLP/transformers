@@ -188,6 +188,7 @@ class MBartTokenizer(XLMRobertaTokenizer):
         if kwargs.get("tags_included"):
             self.src_lang = None
             self.tgt_lang = None
+            self.set_src_lang_special_tokens(None)
         else:
             self.src_lang = src_lang
             self.tgt_lang = tgt_lang
@@ -210,6 +211,9 @@ class MBartTokenizer(XLMRobertaTokenizer):
             self.cur_lang_code = self.lang_code_to_id[src_lang]
             self.prefix_tokens = []
             self.suffix_tokens = [self.eos_token_id, self.cur_lang_code]
+        else:
+            self.prefix_tokens = []
+            self.suffix_tokens = [self.eos_token_id]
 
     def set_tgt_lang_special_tokens(self, lang: str) -> None:
         """Reset the special tokens to the target language setting. No prefix and suffix=[eos, tgt_lang_code]."""
@@ -217,3 +221,6 @@ class MBartTokenizer(XLMRobertaTokenizer):
             self.cur_lang_code = self.lang_code_to_id[lang]
             self.prefix_tokens = []
             self.suffix_tokens = [self.eos_token_id, self.cur_lang_code]
+        else:
+            self.prefix_tokens = []
+            self.suffix_tokens = [self.eos_token_id]
