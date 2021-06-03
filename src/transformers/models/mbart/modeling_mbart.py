@@ -44,7 +44,6 @@ from ...modeling_outputs import (
 from ...modeling_utils import PreTrainedModel
 from ...utils import logging
 from .configuration_mbart import MBartConfig
-from longformer.longformer_encoder_decoder import LongformerSelfAttentionForBart
 
 
 logger = logging.get_logger(__name__)
@@ -295,7 +294,6 @@ class MBartEncoderLayer(nn.Module):
         self,
         hidden_states: torch.Tensor,
         attention_mask: torch.Tensor,
-        longformer_attention_mask: torch.Tensor,
         layer_head_mask: torch.Tensor,
         output_attentions: bool = False,
     ):
@@ -304,8 +302,6 @@ class MBartEncoderLayer(nn.Module):
             hidden_states (:obj:`torch.FloatTensor`): input to the layer of shape `(seq_len, batch, embed_dim)`
             attention_mask (:obj:`torch.FloatTensor`): attention mask of size
                 `(batch, 1, tgt_len, src_len)` where padding elements are indicated by very large negative values.
-            longformer_attention_mask (:obj:`torch.FloatTensor`): attention mask of size
-                `(batch, src_len)` where 0=local, -1=global, 1=padding.
             layer_head_mask (:obj:`torch.FloatTensor`): mask for attention heads in a given layer of size
                 `(config.encoder_attention_heads,)`.
             output_attentions (:obj:`bool`, `optional`):
@@ -314,11 +310,6 @@ class MBartEncoderLayer(nn.Module):
         """
         residual = hidden_states
         hidden_states = self.self_attn_layer_norm(hidden_states)
-
-        # if longformer attention instead of mbart self attention: use special mask
-        if isinstance(self.self_attn, LongformerSelfAttentionForBart):
-            attention_mask = longformer_attention_mask
-
         hidden_states, attn_weights, _ = self.self_attn(
             hidden_states=hidden_states,
             attention_mask=attention_mask,
@@ -769,11 +760,8 @@ class MBartEncoder(MBartPreTrainedModel):
         hidden_states = F.dropout(hidden_states, p=self.dropout, training=self.training)
 
         # expand attention_mask
-        longformer_attention_mask = None
         if attention_mask is not None:
             # [bsz, seq_len] -> [bsz, 1, tgt_seq_len, src_seq_len]
-            # need to return original, inverted mask for longformer attention, else value for global attention is lost
-            longformer_attention_mask = 1 - attention_mask
             attention_mask = _expand_mask(attention_mask, inputs_embeds.dtype)
 
         encoder_states = () if output_hidden_states else None
@@ -804,14 +792,12 @@ class MBartEncoder(MBartPreTrainedModel):
                         create_custom_forward(encoder_layer),
                         hidden_states,
                         attention_mask,
-                        longformer_attention_mask,
                         (head_mask[idx] if head_mask is not None else None),
                     )
                 else:
                     layer_outputs = encoder_layer(
                         hidden_states,
                         attention_mask,
-                        longformer_attention_mask,
                         layer_head_mask=(head_mask[idx] if head_mask is not None else None),
                         output_attentions=output_attentions,
                     )
