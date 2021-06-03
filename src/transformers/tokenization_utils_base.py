@@ -3300,13 +3300,15 @@ class PreTrainedTokenizerBase(SpecialTokensMixin):
         # mBART-specific kwargs that should be ignored by other models.
         kwargs.pop("src_lang", None)
         kwargs.pop("tgt_lang", None)
-        add_special_tokens = not kwargs.pop("tags_included", False)
+        kwargs.pop("tags_included", None)
+        # add_special_tokens = not kwargs.pop("tags_included", False)
+        # breakpoint()
 
         if max_length is None:
             max_length = self.model_max_length
         model_inputs = self(
             src_texts,
-            add_special_tokens=add_special_tokens,
+            add_special_tokens=True,
             return_tensors=return_tensors,
             max_length=max_length,
             padding=padding,
@@ -3321,7 +3323,7 @@ class PreTrainedTokenizerBase(SpecialTokensMixin):
         with self.as_target_tokenizer():
             labels = self(
                 tgt_texts,
-                add_special_tokens=add_special_tokens,
+                add_special_tokens=True,
                 return_tensors=return_tensors,
                 padding=padding,
                 max_length=max_target_length,

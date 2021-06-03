@@ -173,6 +173,7 @@ class MBartTokenizer(XLMRobertaTokenizer):
             :obj:`List[int]`: List of `input IDs <../glossary.html#input-ids>`__ with the appropriate special tokens.
         """
         if token_ids_1 is None:
+            # print("build input ", self.prefix_tokens + token_ids_0 + self.suffix_tokens)
             return self.prefix_tokens + token_ids_0 + self.suffix_tokens
         # We don't expect to process pairs, but leave the pair logic for API consistency
         return self.prefix_tokens + token_ids_0 + token_ids_1 + self.suffix_tokens
@@ -188,6 +189,7 @@ class MBartTokenizer(XLMRobertaTokenizer):
         if kwargs.get("tags_included"):
             self.src_lang = None
             self.tgt_lang = None
+            self.set_src_lang_special_tokens(None) # why
         else:
             self.src_lang = src_lang
             self.tgt_lang = tgt_lang
@@ -210,16 +212,16 @@ class MBartTokenizer(XLMRobertaTokenizer):
             self.cur_lang_code = self.lang_code_to_id[src_lang]
             self.prefix_tokens = []
             self.suffix_tokens = [self.eos_token_id, self.cur_lang_code]
+        else:
+            self.prefix_tokens = []
+            self.suffix_tokens = [self.eos_token_id]
 
     def set_tgt_lang_special_tokens(self, lang: str) -> None:
         """Reset the special tokens to the target language setting. No prefix and suffix=[eos, tgt_lang_code]."""
-# <<<<<<< HEAD
         if lang is not None:
             self.cur_lang_code = self.lang_code_to_id[lang]
             self.prefix_tokens = []
             self.suffix_tokens = [self.eos_token_id, self.cur_lang_code]
-# =======
-#         self.cur_lang_code = self.lang_code_to_id[lang]
-#         self.prefix_tokens = [self.cur_lang_code]
-#         self.suffix_tokens = [self.eos_token_id]
-# >>>>>>> parent of c432e5f2... adapt mbart to be used with longformer attention in encoder
+        else:
+            self.prefix_tokens = []
+            self.suffix_tokens = [self.eos_token_id]
