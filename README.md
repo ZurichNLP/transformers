@@ -14,6 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
+# A more versatile mBART
+
+This branch includes tweaks to allow multilingual batches in mBART fine-tuning.
+It is intended to be used for a multilingual model that can be finetuned on mixed language data.
+
+---
+
 <p align="center">
     <br>
     <img src="https://raw.githubusercontent.com/huggingface/transformers/master/docs/source/imgs/transformers_logo_name.png" width="400"/>
